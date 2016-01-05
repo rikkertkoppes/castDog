@@ -189,18 +189,6 @@ Pup.prototype.launchApplication = function(appId) {
             }
         }
     });
-
-    // return new Promise(function(resolve,reject) {
-    //     //launch the application
-    //     receiver.send({
-    //     });
-
-    //     function checkApplicationRunning(data) {
-    //     }
-
-    //     //wait for the application to be running, resolve with a session
-    //     receiver.addListener('message',checkApplicationRunning);
-    // });
 }
 
 //sends a message and listens for a response with the same requestId
