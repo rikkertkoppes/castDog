@@ -75,6 +75,13 @@ Dog.prototype.createBrowser = function() {
 
     this.browser.on('ready',() => this.browser.discover());
 
+
+//receiving updates when chromcast comes online,
+//but also when the application changes, since host.txt is updated in the broadcast:
+  // mdns:browser new on pseudo multicast, because updated host.txt +5ms
+  // mdns:browser isNew +1ms true
+  // specifically the rs and st field
+  // commenting out mdns-js browser.js:94 works
     this.browser.on('update',function(service) {
         // console.log('update',service);
         if (service.type[0].subtypes.length === 0) {
