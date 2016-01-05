@@ -6,7 +6,7 @@
 // API helper docs
 // https://github.com/thibauts/node-castv2/blob/master/README.md
 var Client = require('castv2').Client;
-var mdns = require('mdns');
+var mdns = require('mdns-js');
 var Promise = require('bluebird');
 
 //using castDeck as a generic page displayer, see https://github.com/FirstLegoLeague/castDeck
@@ -61,17 +61,38 @@ Dog.prototype.createBrowser = function() {
     var self = this;
     this.browser = mdns.createBrowser(mdns.tcp('googlecast'));
 
-    this.browser.on('serviceUp', function(service) {
-        console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
-        self.hosts[service.addresses[0]] = service;
-        console.log(self.hosts);
-        var deviceConfig = self.config[service.name];
-        // react if there is a configuration defined
-        if (deviceConfig) {
-            console.log('start service on ', service.name);
-            self.ondeviceup(service.addresses[0], deviceConfig);
+    // this.browser.on('serviceUp', function(service) {
+    //     console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
+    //     self.hosts[service.addresses[0]] = service;
+    //     console.log(self.hosts);
+    //     var deviceConfig = self.config[service.name];
+    //     // react if there is a configuration defined
+    //     if (deviceConfig) {
+    //         console.log('start service on ', service.name);
+    //         self.ondeviceup(service.addresses[0], deviceConfig);
+    //     }
+    // });
+
+    this.browser.on('ready',() => this.browser.discover());
+
+    this.browser.on('update',function(service) {
+        // console.log('update',service);
+        if (service.type[0].subtypes.length === 0) {
+            service.name = service.txt[4].split('=')[1];
+            console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
+            self.hosts[service.addresses[0]] = service;
+            console.log(self.hosts);
+            var deviceConfig = self.config[service.name];
+            // react if there is a configuration defined
+            if (deviceConfig) {
+                console.log('start service on ', service.name);
+                self.ondeviceup(service.addresses[0], deviceConfig);
+            }
+        } else {
+            console.log('unknown update event');
+            console.log(JSON.stringify(service,null,2));
         }
-    });
+    })
 
     this.browser.on('error', function(err) {
         console.log('browser',err);
@@ -90,7 +111,7 @@ Dog.prototype.createBrowser = function() {
     //     },1000);
     // })
 
-    this.browser.start();
+    // this.browser.start();
     return this.browser;
 };
 
