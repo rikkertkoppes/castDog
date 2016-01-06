@@ -174,14 +174,13 @@ Pup.prototype.init = function(deviceConfig) {
     });
 
     //create a session
-    var receiver = createReceiver(client);
-    this.receiver = receiver;
+    this.createReceiver(client);
 
     //watch the status and reinit if needed
     //TODO: debouncing or event listener cleanup
     //problem is that when the app is killed externally, the backdrop is launch event
     //is received twice. This occasionally leads to memleak warnings
-    receiver.on('message', function(data, broadcast) {
+    this.receiver.on('message', function(data, broadcast) {
         console.log(JSON.stringify(data));
         if (data.type === 'RECEIVER_STATUS') {
             if (isCasting(data.status, backDropAppId)) {
@@ -190,6 +189,28 @@ Pup.prototype.init = function(deviceConfig) {
             }
         }
     });
+}
+
+//create a receiver and requests the status (sync). Starts heartbeat
+Pup.prototype.createReceiver = function() {
+    var connection = this.client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
+    var heartbeat = this.client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.tp.heartbeat', 'JSON');
+    this.receiver = this.client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.receiver', 'JSON');
+
+    // establish virtual connection to the receiver
+    connection.send({
+        type: 'CONNECT'
+    });
+
+    //start heartbeating
+    this.client.heartbeater = setInterval(function() {
+        heartbeat.send({
+            type: 'PING'
+        });
+    }, 5000);
+
+    //ask for status
+    this.receiver.send({type: 'GET_STATUS', requestId: 3});
 }
 
 //initializes the castDeck application by launching the app and sending the device configuration
@@ -201,7 +222,7 @@ Pup.prototype.initCastDeck = function() {
     return this.launchApplication(castDeckAppId).then(function(pup) {
         console.log('got session');
         //send the configuration over
-        pup.sendMessage('urn:x-cast:org.firstlegoleague.castDeck', deviceConfig);
+        pup.setConfig(deviceConfig);
     });
 }
 
@@ -229,10 +250,10 @@ Pup.prototype.launchApplication = function(appId) {
 }
 
 //sends a message to an established session (containing a transportId and client) (sync)
-Pup.prototype.sendMessage = function(namespace, message) {
+Pup.prototype.setConfig = function(message) {
     //create a channel
     var appConnectionChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
-    var appMessageChannel = this.client.createChannel('sender-0', this.transportId, namespace, 'JSON');
+    var appMessageChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:org.firstlegoleague.castDeck', 'JSON');
     //connect to the app
     appConnectionChannel.send({
         type: 'CONNECT'
@@ -297,30 +318,6 @@ function start(config) {
     dog.createBrowser();
 
     return dog;
-}
-
-//create a receiver and requests the status (sync). Starts heartbeat
-function createReceiver(client) {
-    var connection = client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
-    var heartbeat = client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.tp.heartbeat', 'JSON');
-    var receiver = client.createChannel('sender-0', 'receiver-0', 'urn:x-cast:com.google.cast.receiver', 'JSON');
-
-    // establish virtual connection to the receiver
-    connection.send({
-        type: 'CONNECT'
-    });
-
-    //start heartbeating
-    client.heartbeater = setInterval(function() {
-        heartbeat.send({
-            type: 'PING'
-        });
-    }, 5000);
-
-    //ask for status
-    receiver.send({type: 'GET_STATUS', requestId: 3});
-
-    return receiver;
 }
 
 function isCasting(status, appId) {
