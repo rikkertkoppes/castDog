@@ -62,19 +62,6 @@ Dog.prototype.getHost = function(name) {
 Dog.prototype.createBrowser = function() {
     var self = this;
     this.browser = mdns.createBrowser(mdns.tcp('googlecast'));
-
-    // this.browser.on('serviceUp', function(service) {
-    //     console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
-    //     self.hosts[service.addresses[0]] = service;
-    //     console.log(self.hosts);
-    //     var deviceConfig = self.config[service.name];
-    //     // react if there is a configuration defined
-    //     if (deviceConfig) {
-    //         console.log('start service on ', service.name);
-    //         self.ondeviceup(service.addresses[0], deviceConfig);
-    //     }
-    // });
-
     this.browser.on('ready',() => this.browser.discover());
 
 
