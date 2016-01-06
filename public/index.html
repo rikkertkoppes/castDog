@@ -1,1 +1,164 @@
-hw
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/angular_material/0.11.4/angular-material.min.css">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        html, body {
+            background-color: #F2F2F2;
+        }
+        .card, .dialog {
+            border: 1px solid gray;
+            border-radius: 2px;
+            margin: 8px;
+        }
+    </style>
+</head>
+<body ng-app="castDog">
+    <script type="text/ng-template" id="editHostDialogTemplate">
+        <md-dialog style="width: 400px">
+            <md-dialog-content class="md-dialog-content">
+                <h2 class="md-title">
+                    {{host.name}}
+                </h2>
+                <md-input-container>
+                    <label>Url</label>
+                    <input type="text" ng-model="host.config.url" />
+                </md-input-container>
+                <p>
+                    <md-icon class="md-button md-fab md-mini" ng-click="rotateLeft(host.config)">rotate_left</md-icon>
+                    <md-icon class="md-button md-fab md-mini" ng-click="rotateRight(host.config)">rotate_right</md-icon>
+                    {{host.config.rotation}}
+                </p>
+                <p>
+                    <md-icon class="md-button md-fab md-mini" ng-click="zoomOut(host.config)">zoom_out</md-icon>
+                    <md-icon class="md-button md-fab md-mini" ng-click="zoomIn(host.config)">zoom_in</md-icon>
+                    <md-icon class="md-button md-fab md-mini" ng-click="zoomReset(host.config)">youtube_searched_for</md-icon>
+                    {{host.config.zoom | number:1}}
+                </p>
+                <p>
+                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,'native')">crop_original</md-icon>
+                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,16/9)">crop_7_5</md-icon>
+                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,16/10)">crop_16_9</md-icon>
+                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,4/3)">crop_landscape</md-icon>
+            </md-dialog-content>
+            <div class="md-actions">
+                <md-button ng-click="hide()">
+                    Cancel
+                </md-button>
+                <md-button ng-click="answer(host)">
+                    Ok
+                </md-button>
+            </div>
+        </md-dialog>
+    </script>
+    <div class="content" ng-controller="hostsController">
+        <div class="simple-toolbar main-toolbar">
+            <div class="simple-toolbar-tools">
+                <h2>
+                    CastDog
+                </h2>
+            </div>
+        </div>
+        <div class="main">
+            <div ng-repeat="host in hosts" class="simple-card">
+                <div class="simple-card-content">
+                    <h2 class="md-title">{{host.name}}</h2>
+                    <p>{{host.app || 'no app running'}}</p>
+                    <p>
+                        <span ng-if="host.pup">Configure</span>
+                        <span ng-if="!host.pup">No watch dog attached</span>
+                    </p>
+                </div>
+                <div class="md-actions">
+                    <md-button ng-click="editHostDlg(host)">Configure</md-button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angular_material/0.11.4/angular-material.min.js"></script>
+    <script>
+    angular.module('castDog',['ngMaterial'])
+        .config(function($mdThemingProvider) {
+            $mdThemingProvider.theme('default')
+                .primaryPalette('indigo')
+                .accentPalette('orange');
+        }).controller('hostDialogController', [
+            '$scope', '$mdDialog',
+            function($scope,$mdDialog) {
+                $scope.hide = function() {
+                    $mdDialog.hide();
+                };
+                $scope.cancel = function() {
+                    $mdDialog.cancel();
+                };
+                $scope.answer = function(answer) {
+                    $mdDialog.hide(answer);
+                };
+                $scope.rotateLeft = function(config) {
+                    config.rotation += 270;
+                    config.rotation %= 360;
+                };
+                $scope.rotateRight = function(config) {
+                    config.rotation += 90;
+                    config.rotation %= 360;
+                };
+                $scope.zoomIn = function(config) {
+                    config.zoom += 0.1;
+                };
+                $scope.zoomOut = function(config) {
+                    config.zoom -= 0.1;
+                };
+                $scope.zoomReset = function(config) {
+                    config.zoom = 1;
+                };
+                $scope.aspect = function(config,aspect) {
+                    config.aspect = aspect;
+                };
+            }
+        ]).controller('hostsController',[
+            '$scope','$http','$mdDialog',
+            function($scope,$http,$mdDialog) {
+                $http.get('hosts').success(function(result) {
+                    $scope.hosts = result;
+                });
+
+                var initConfig = function(host) {
+                    var c = host.config;
+                    c.zoom = c.zoom||1;
+                    c.rotation = c.rotation||0;
+                };
+
+                $scope.editHostDlg = function(host) {
+                    $scope.host = host;
+                    initConfig($scope.host);
+                    return $mdDialog.show({
+                        parent: angular.element(document.body),
+                        templateUrl: 'editHostDialogTemplate',
+                        controller: 'hostDialogController',
+                        scope: $scope.$new()
+                    }).then(function(result) {
+                        if (result) {
+                            console.log(result);
+                            $http.post('hosts/'+result.name+'/config').success(function() {
+                                console.log('config saved');
+                            });
+                        }
+                    });
+                }
+                $scope.closeHostDlg = function() {
+                    delete $scope.host;
+                }
+            }
+        ])
+    </script>
+</body>
+</html>

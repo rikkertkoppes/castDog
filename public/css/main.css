@@ -1,0 +1,92 @@
+.main {
+    position: relative;
+    overflow: hidden;   /* box context */
+    margin-top: 64px;
+}
+
+/* simple toolbar, just the layout */
+@media screen {
+    .simple-toolbar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        width: auto;
+        box-shadow: 0 2px 4px -1px rgba(0,0,0,.14),0 4px 5px 0 rgba(0,0,0,.098),0 1px 10px 0 rgba(0,0,0,.084);
+
+        z-index: 2;
+        font-size: 20px;
+        min-height: 64px;
+
+        background-color: white;
+
+        line-height: 63px; /* 1px less to make vertical alignment better */
+    }
+
+    .simple-toolbar .simple-toolbar-tools {
+        box-sizing: border-box;
+        font-size: 20px;
+        letter-spacing: .005em;
+        font-weight: 400;
+        width: 100%;
+        height: 64px;
+        max-height: 64px;
+        padding-left: 16px;
+        margin: 0;
+    }
+
+    .simple-toolbar-tools > * {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .simple-toolbar-tools h2, 
+    .simple-toolbar-tools h3 {
+        font-size: inherit;
+        font-weight: inherit;
+        margin: inherit;
+    }
+
+    .simple-toolbar input[type=text],
+    .simple-toolbar input[type=text]:focus {
+        border: none;
+        outline: none;
+        width: calc(100% - 80px);
+    }
+
+    .simple-toolbar-tools>.md-button:first-child {
+        margin-left: -8px;
+    }
+
+    .main-toolbar {
+        background-color: rgb(63,81,181);
+        color: rgba(255,255,255,0.87);
+    }
+    .main-toolbar  md-icon {
+        color: rgba(255,255,255,0.87);
+    }
+
+    .pull-right {
+        float: right;
+    }
+}
+
+/* simple card just the layout */
+@media screen {
+    .simple-card {
+        box-sizing: border-box;
+        margin: 8px;
+        box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
+        background-color: rgb(255,255,255);
+        border-radius: 2px;
+    }
+    .simple-card .simple-card-content {
+        padding: 16px;
+    }
+
+    /* menu in cards */
+    md-card md-menu,
+    .simple-card md-menu {
+        float: right;
+    }
+}
