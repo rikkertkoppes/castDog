@@ -194,18 +194,20 @@ Pup.prototype.init = function(deviceConfig) {
 
 //initializes the castDeck application by launching the app and sending the device configuration
 Pup.prototype.initCastDeck = function() {
+    var self = this;
     var client = this.client;
     var receiver = this.receiver;
     var deviceConfig = this.deviceConfig;
-    return this.launchApplication(castDeckAppId).then(function(session) {
+    return this.launchApplication(castDeckAppId).then(function(pup) {
         console.log('got session');
         //send the configuration over
-        sendMessage(session, 'urn:x-cast:org.firstlegoleague.castDeck', deviceConfig);
+        pup.sendMessage('urn:x-cast:org.firstlegoleague.castDeck', deviceConfig);
     });
 }
 
 //launches an application, resolves when application runs, rejects when it finds another running
 Pup.prototype.launchApplication = function(appId) {
+    var self = this;
     var client = this.client;
     var receiver = this.receiver;
     return this.sendAndListen(receiver, {
@@ -216,19 +218,34 @@ Pup.prototype.launchApplication = function(appId) {
         if (data.type === 'RECEIVER_STATUS' && data.status.applications) {
             console.log('app running, removing listener');
             if (isCasting(data.status), appId) {
-                var transportId = data.status.applications[0].transportId
-
-                return {
-                    client: client,
-                    appId: appId,
-                    receiver: receiver,
-                    transportId: transportId
-                }
+                self.transportId = data.status.applications[0].transportId;
+                self.appId = appId;
+                return self
             } else {
                 throw new Error('wrong application running: '+JSON.stringify(data));
             }
         }
     });
+}
+
+//sends a message to an established session (containing a transportId and client) (sync)
+Pup.prototype.sendMessage = function(namespace, message) {
+    //create a channel
+    var appConnectionChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
+    var appMessageChannel = this.client.createChannel('sender-0', this.transportId, namespace, 'JSON');
+    //connect to the app
+    appConnectionChannel.send({
+        type: 'CONNECT'
+    });
+
+    //set up a listener to received messages
+    // appMessageChannel.on('message', function(data, broadcast) {
+    //     console.log('received message',data, broadcast);
+    // });
+
+    //send the message
+    console.log('sending',message);
+    appMessageChannel.send(message);
 }
 
 //sends a message and listens for a response with the same requestId
@@ -305,30 +322,6 @@ function createReceiver(client) {
 
     return receiver;
 }
-
-
-
-//sends a message to an established session (containing a transportId and client) (sync)
-function sendMessage(session, namespace, message) {
-    //create a channel
-    var appConnectionChannel = session.client.createChannel('sender-0', session.transportId, 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
-    var appMessageChannel = session.client.createChannel('sender-0', session.transportId, namespace, 'JSON');
-    //connect to the app
-    appConnectionChannel.send({
-        type: 'CONNECT'
-    });
-
-    //set up a listener to received messages
-    // appMessageChannel.on('message', function(data, broadcast) {
-    //     console.log('received message',data, broadcast);
-    // });
-
-    //send the message
-    console.log('sending',message);
-    appMessageChannel.send(message);
-}
-
-
 
 function isCasting(status, appId) {
     if (!status || !status.applications || status.applications.length === 0) {
