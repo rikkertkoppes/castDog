@@ -23,12 +23,14 @@ function getRecord(host) {
     if (!host) {return null}
     return {
         id: host.txtRecord.id,
+        app: host.txtRecord.rs,
         name: host.name,
         fullname: host.fullname,
         host: host.host,
         port: host.port,
         address: host.addresses[0],
-        pup: host.pup
+        pup: host.pup,
+        config: {}
     };
 }
 
@@ -76,16 +78,26 @@ Dog.prototype.createBrowser = function() {
     this.browser.on('ready',() => this.browser.discover());
 
 
+    function parseService(data) {
+        data.txtRecord = (data.txt||[]).reduce(function(obj, line) {
+            var pair = line.split('=');
+            obj[pair[0]] = pair[1];
+            return obj;
+        },{});
+        data.name = data.txtRecord.fn;
+        return data;
+    }
+
 //receiving updates when chromcast comes online,
 //but also when the application changes, since host.txt is updated in the broadcast:
   // mdns:browser new on pseudo multicast, because updated host.txt +5ms
   // mdns:browser isNew +1ms true
   // specifically the rs and st field
   // commenting out mdns-js browser.js:94 works
-    this.browser.on('update',function(service) {
+    this.browser.on('update',function(message) {
+        var service = parseService(message);
         // console.log('update',service);
         if (service.type[0].subtypes.length === 0) {
-            service.name = service.txt[4].split('=')[1];
             console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
             self.hosts[service.addresses[0]] = service;
             console.log(self.hosts);
