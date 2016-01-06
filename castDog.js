@@ -30,7 +30,7 @@ function getRecord(host) {
         port: host.port,
         address: host.addresses[0],
         pup: host.pup,
-        config: {}
+        config: host.pup
     };
 }
 
@@ -252,6 +252,7 @@ Pup.prototype.launchApplication = function(appId) {
 //sends a message to an established session (containing a transportId and client) (sync)
 Pup.prototype.setConfig = function(message) {
     //create a channel
+    console.log('creating channels',message);
     var appConnectionChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
     var appMessageChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:org.firstlegoleague.castDeck', 'JSON');
     //connect to the app
@@ -307,8 +308,8 @@ Pup.prototype.getStatus = function() {
 
 Pup.prototype.toJSON = function() {
     console.log(this);
-    return '';
-    // return JSON.stringify(this.,['requestId','status','type']);
+    // return '';
+    return this.deviceConfig;
 }
 
 

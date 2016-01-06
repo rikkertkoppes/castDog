@@ -148,7 +148,7 @@
                     }).then(function(result) {
                         if (result) {
                             console.log(result);
-                            $http.post('hosts/'+result.name+'/config').success(function() {
+                            $http.post('hosts/'+result.name+'/config',result.config).success(function() {
                                 console.log('config saved');
                             });
                         }
