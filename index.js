@@ -32,7 +32,11 @@ app.post('/hosts/:name/config',function(req,res) {
 	console.log(req.body);
 	var host = dog.getHost(req.params.name);
 	if (host && host.pup) {
-	    host.pup.setConfig(req.body);
+		if (host.pup.transportId) {
+	    	host.pup.setConfig(req.body);
+		} else {
+			host.pup.initCastDeck(req.body);
+		}
 	    res.status(201);
 	} else {
 		res.status(404);

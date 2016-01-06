@@ -201,15 +201,11 @@ Pup.prototype.createReceiver = function() {
 }
 
 //initializes the castDeck application by launching the app and sending the device configuration
-Pup.prototype.initCastDeck = function() {
-    var self = this;
-    var client = this.client;
-    var receiver = this.receiver;
-    var deviceConfig = this.deviceConfig;
+Pup.prototype.initCastDeck = function(config) {
     return this.launchApplication(castDeckAppId).then(function(pup) {
         console.log('got session');
         //send the configuration over
-        pup.setConfig(deviceConfig);
+        pup.setConfig(config || pup.deviceConfig);
     });
 }
 
@@ -239,7 +235,7 @@ Pup.prototype.launchApplication = function(appId) {
 //sends a message to an established session (containing a transportId and client) (sync)
 Pup.prototype.setConfig = function(message) {
     //create a channel
-    console.log('creating channels',message);
+    console.log('creating channels',message,this.transportId);
     var appConnectionChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:com.google.cast.tp.connection', 'JSON');
     var appMessageChannel = this.client.createChannel('sender-0', this.transportId, 'urn:x-cast:org.firstlegoleague.castDeck', 'JSON');
     //connect to the app
