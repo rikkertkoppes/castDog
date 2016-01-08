@@ -83,20 +83,23 @@ Dog.prototype.createBrowser = function() {
   // commenting out mdns-js browser.js:94 works
     this.browser.on('update',function(message) {
         var service = parseService(message);
+        var type = service.type[0];
         // console.log('update',service);
-        if (service.type[0].subtypes.length === 0) {
-            console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
-            self.hosts[service.addresses[0]] = service;
-            console.log(self.hosts);
-            var deviceConfig = self.config[service.name];
-            // react if there is a configuration defined
-            if (deviceConfig) {
-                console.log('start service on ', service.name);
-                self.ondeviceup(service.addresses[0], deviceConfig);
+        if (type.name === 'googlecast') {
+            if (type.subtypes.length === 0) {
+                console.log('found device %s at %s:%d', service.name, service.addresses[0], service.port);
+                self.hosts[service.addresses[0]] = service;
+                console.log(self.hosts);
+                var deviceConfig = self.config[service.name];
+                // react if there is a configuration defined
+                if (deviceConfig) {
+                    console.log('start service on ', service.name);
+                    self.ondeviceup(service.addresses[0], deviceConfig);
+                }
+            } else {
+                console.log('unknown update event');
+                console.log(JSON.stringify(service,null,2));
             }
-        } else {
-            console.log('unknown update event');
-            console.log(JSON.stringify(service,null,2));
         }
     })
 
