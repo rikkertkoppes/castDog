@@ -3,20 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
-    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/angular_material/0.11.4/angular-material.min.css">
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
-    <style>
-        html, body {
-            background-color: #F2F2F2;
-        }
-        .card, .dialog {
-            border: 1px solid gray;
-            border-radius: 2px;
-            margin: 8px;
-        }
-    </style>
 </head>
 <body ng-app="castDog">
     <script type="text/ng-template" id="editHostDialogTemplate">
@@ -65,32 +55,47 @@
             </div>
         </div>
         <div class="main">
-            <div ng-repeat="host in hosts" class="simple-card">
-                <div class="simple-card-content">
-                    <h2 class="md-title">{{host.name}}</h2>
-                    <p>{{host.app || 'no app running'}}</p>
-                    <p>
-                        <span ng-if="host.pup">Configure</span>
-                        <span ng-if="!host.pup">No watch dog attached</span>
-                    </p>
-                </div>
-                <div class="md-actions">
-                    <md-button ng-click="editHostDlg(host)">Configure</md-button>
-                </div>
-            </div>
+            <md-content>
+                <!-- <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h2>
+                            <span>Toolbar with Icon Buttons</span>
+                        </h2>
+                    </div>
+                </md-toolbar> -->
+                <md-card ng-repeat="host in hosts">
+                    <md-card-title>
+                        <md-card-title-text>
+                            <span class="md-headline">{{host.name}}</span>
+                        </md-card-title-text>
+                    </md-card-title>
+                    <md-card-content>
+                        <p>{{host.app || 'no app running'}}</p>
+                        <p>
+                            <span ng-if="host.pup">Configure</span>
+                            <span ng-if="!host.pup">No watch dog attached</span>
+                        </p>
+                    </md-card-content>
+                    <md-card-actions>
+                        <md-button ng-click="editHostDlg(host)">Configure</md-button>
+                    </md-card-actions>
+                </md-card>
+            </md-content>
         </div>
     </div>
     <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angular_material/0.11.4/angular-material.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
     <script>
     angular.module('castDog',['ngMaterial'])
         .config(function($mdThemingProvider) {
             $mdThemingProvider.theme('default')
                 .primaryPalette('indigo')
-                .accentPalette('orange');
+                .accentPalette('orange')
+                .backgroundPalette('grey')
+                .dark();
         }).controller('hostDialogController', [
             '$scope', '$mdDialog',
             function($scope,$mdDialog) {
@@ -132,6 +137,7 @@
                 });
 
                 var initConfig = function(host) {
+                    host.config = host.config||{};
                     var c = host.config;
                     c.zoom = c.zoom||1;
                     c.rotation = c.rotation||0;
