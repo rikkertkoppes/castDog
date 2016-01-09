@@ -7,34 +7,72 @@
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
+    <style>
+    html, body {
+        background-color: rgb(66,66,66);
+        color: white;
+    }
+    body.md-dialog-is-showing {
+        /* fix for offset body */
+        padding-top: 0.1px;
+    }
+    .main-toolbar {
+        background-color: #333;
+        color: rgba(255,255,255,0.87);
+        border-bottom: 1px solid #444;
+        box-shadow: inset 0 2px 4px -1px rgba(0,0,0,.14), inset 0 4px 5px 0 rgba(0,0,0,.098), inset 0 1px 10px 0 rgba(0,0,0,.084);
+    }
+    </style>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
 </head>
-<body ng-app="castDog">
+<body ng-app="castDog" ng-cloak>
     <script type="text/ng-template" id="editHostDialogTemplate">
         <md-dialog style="width: 400px">
             <md-dialog-content class="md-dialog-content">
                 <h2 class="md-title">
                     {{host.name}}
                 </h2>
-                <md-input-container>
+                <md-input-container class="md-block">
                     <label>Url</label>
                     <input type="text" ng-model="host.config.url" />
                 </md-input-container>
                 <p>
-                    <md-icon class="md-button md-fab md-mini" ng-click="rotateLeft(host.config)">rotate_left</md-icon>
-                    <md-icon class="md-button md-fab md-mini" ng-click="rotateRight(host.config)">rotate_right</md-icon>
+                    <md-button class="md-fab md-mini md-primary" ng-click="rotateLeft(host.config)">
+                        <md-icon>rotate_left</md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-primary" ng-click="rotateRight(host.config)">
+                        <md-icon>rotate_right</md-icon>
+                    </md-button>
                     {{host.config.rotation}}
                 </p>
                 <p>
-                    <md-icon class="md-button md-fab md-mini" ng-click="zoomOut(host.config)">zoom_out</md-icon>
-                    <md-icon class="md-button md-fab md-mini" ng-click="zoomIn(host.config)">zoom_in</md-icon>
-                    <md-icon class="md-button md-fab md-mini" ng-click="zoomReset(host.config)">youtube_searched_for</md-icon>
+                    <md-button class="md-fab md-mini md-primary" ng-click="zoomOut(host.config)">
+                        <md-icon>zoom_out</md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-primary" ng-click="zoomIn(host.config)">
+                        <md-icon>zoom_in</md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-primary" ng-click="zoomReset(host.config)">
+                        <md-icon>youtube_searched_for</md-icon>
+                    </md-button>
                     {{host.config.zoom | number:1}}
                 </p>
                 <p>
-                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,'native')">crop_original</md-icon>
-                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,16/9)">crop_7_5</md-icon>
-                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,16/10)">crop_16_9</md-icon>
-                    <md-icon class="md-button md-fab md-mini" ng-click="aspect(host.config,4/3)">crop_landscape</md-icon>
+                    <md-button class="md-fab md-mini md-primary" ng-click="aspect(host.config,'native')">
+                        <md-icon>crop_original</md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-primary" ng-click="aspect(host.config,16/9)">
+                        <md-icon>crop_7_5</md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-primary" ng-click="aspect(host.config,16/10)">
+                        <md-icon>crop_16_9</md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini md-primary" ng-click="aspect(host.config,4/3)">
+                        <md-icon>crop_landscape</md-icon>
+                    </md-button>
             </md-dialog-content>
             <div class="md-actions">
                 <md-button ng-click="hide()">
@@ -49,13 +87,11 @@
     <div class="content" ng-controller="hostsController">
         <div class="simple-toolbar main-toolbar">
             <div class="simple-toolbar-tools">
-                <h2>
-                    CastDog
-                </h2>
+                <h2>CastDog</h2>
             </div>
         </div>
         <div class="main">
-            <md-content>
+            <md-content layout="row" layout-wrap>
                 <!-- <md-toolbar>
                     <div class="md-toolbar-tools">
                         <h2>
@@ -63,10 +99,14 @@
                         </h2>
                     </div>
                 </md-toolbar> -->
-                <md-card ng-repeat="host in hosts">
+                <md-card ng-repeat="host in hosts" flex="50" flex-xs="100" flex-gt-md="25">
                     <md-card-title>
                         <md-card-title-text>
-                            <span class="md-headline">{{host.name}}</span>
+                            <span class="md-headline">
+                                <md-icon ng-if="host.pup">cast_connected</md-icon>
+                                <md-icon ng-if="!host.pup">cast</md-icon>
+                                {{host.name}}
+                            </span>
                         </md-card-title-text>
                     </md-card-title>
                     <md-card-content>
@@ -76,23 +116,19 @@
                             <span ng-if="!host.pup">No watch dog attached</span>
                         </p>
                     </md-card-content>
-                    <md-card-actions>
+                    <md-card-actions layout="row" layout-align="end center">
                         <md-button ng-click="editHostDlg(host)">Configure</md-button>
                     </md-card-actions>
                 </md-card>
             </md-content>
         </div>
     </div>
-    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
     <script>
     angular.module('castDog',['ngMaterial'])
         .config(function($mdThemingProvider) {
             $mdThemingProvider.theme('default')
-                .primaryPalette('indigo')
+                .primaryPalette('cyan')
                 .accentPalette('orange')
                 .backgroundPalette('grey')
                 .dark();
