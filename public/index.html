@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CastDog</title>
     <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
     <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -21,6 +22,15 @@
         color: rgba(255,255,255,0.87);
         border-bottom: 1px solid #444;
         box-shadow: inset 0 2px 4px -1px rgba(0,0,0,.14), inset 0 4px 5px 0 rgba(0,0,0,.098), inset 0 1px 10px 0 rgba(0,0,0,.084);
+    }
+    iframe {
+        border: none;
+    }
+    md-card {
+        overflow: hidden;
+    }
+    .card-image {
+        height: 100px;
     }
     </style>
     <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -99,7 +109,7 @@
                         </h2>
                     </div>
                 </md-toolbar> -->
-                <md-card ng-repeat="host in hosts" flex="50" flex-xs="100" flex-gt-md="25">
+                <md-card ng-repeat="host in hosts" flex="50" flex-xs="100" flex-gt-sm="25">
                     <md-card-title>
                         <md-card-title-text>
                             <span class="md-headline">
@@ -109,10 +119,13 @@
                             </span>
                         </md-card-title-text>
                     </md-card-title>
+                    <div class="card-image">
+                        <iframe cast-frame="frameConfig(host)"></iframe>
+                    </div>
                     <md-card-content>
                         <p>{{host.app || 'no app running'}}</p>
                         <p>
-                            <span ng-if="host.pup">Configure</span>
+                            <!-- <span ng-if="host.pup">{{host.pup.url}}</span> -->
                             <span ng-if="!host.pup">No watch dog attached</span>
                         </p>
                     </md-card-content>
@@ -165,7 +178,32 @@
                     config.aspect = aspect;
                 };
             }
-        ]).controller('hostsController',[
+        ]).directive('castFrame',function($timeout) {
+            return {
+                restrict: 'A',
+                scope: {
+                    config: '=castFrame'
+                },
+                link: function($scope,$element,$attrs) {
+                    $timeout(function() {
+                        var container = $element.parent();
+                        var w = container.width();
+                        var a = ($scope.config.aspect=='native')?16/9:$scope.config.aspect;
+                        var h = w/a;
+                        var z = $scope.config.zoom;
+                        console.log(container,w,h,a);
+                        container.height(h);
+                        $element.width(w/z);
+                        $element.height(h/z);
+                        $element.css({
+                            transform: 'scale('+z+')',
+                            transformOrigin: '0 0'
+                        });
+                        $element[0].src = $scope.config.url;
+                    });
+                }
+            }
+        }).controller('hostsController',[
             '$scope','$http','$mdDialog',
             function($scope,$http,$mdDialog) {
                 $http.get('hosts').success(function(result) {
@@ -198,6 +236,16 @@
                 }
                 $scope.closeHostDlg = function() {
                     delete $scope.host;
+                }
+
+                $scope.frameConfig = function(host) {
+                    var pup = host.pup;
+                    if (!pup) return {};
+                    return {
+                        zoom: 0.4,
+                        url: pup.url,
+                        aspect: pup.aspect
+                    }
                 }
             }
         ])
