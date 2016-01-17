@@ -120,7 +120,7 @@
                         </md-card-title-text>
                     </md-card-title>
                     <div class="card-image">
-                        <iframe cast-frame="frameConfig(host)"></iframe>
+                        <iframe cast-frame="host.$frameConfig"></iframe>
                     </div>
                     <md-card-content>
                         <p>{{host.app || 'no app running'}}</p>
@@ -189,9 +189,13 @@
                         var container = $element.parent();
                         var w = container.width();
                         var a = ($scope.config.aspect=='native')?16/9:$scope.config.aspect;
+                        var r = $scope.config.rotation % 180;
+                        // if (r) {
+                        //     a = 1/a;
+                        // }
                         var h = w/a;
                         var z = $scope.config.zoom;
-                        console.log(container,w,h,a);
+                        // console.log(container,w,h,a);
                         container.height(h);
                         $element.width(w/z);
                         $element.height(h/z);
@@ -208,6 +212,16 @@
             function($scope,$http,$mdDialog) {
                 $http.get('hosts').success(function(result) {
                     $scope.hosts = result;
+                    $scope.hosts.forEach(function(host) {
+                        if (host.pup) {
+                            host.$frameConfig = {
+                                zoom: 0.4,
+                                url: host.pup.url,
+                                aspect: host.pup.aspect,
+                                rotation: host.pup.rotation
+                            };
+                        }
+                    });
                 });
 
                 var initConfig = function(host) {
@@ -236,16 +250,6 @@
                 }
                 $scope.closeHostDlg = function() {
                     delete $scope.host;
-                }
-
-                $scope.frameConfig = function(host) {
-                    var pup = host.pup;
-                    if (!pup) return {};
-                    return {
-                        zoom: 0.4,
-                        url: pup.url,
-                        aspect: pup.aspect
-                    }
                 }
             }
         ])
